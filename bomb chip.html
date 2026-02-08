@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Chip Challenge</title>
+    <style>
+        body { background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        
+        /* 상단 결과 텍스트 */
+        #status { font-size: 24px; font-weight: bold; height: 40px; margin-bottom: 20px; color: #333; }
+
+        .game-board { display: flex; gap: 80px; }
+        .side { text-align: center; }
+
+        /* 하트 스타일 */
+        .hearts { font-size: 30px; margin-bottom: 20px; color: #ff4757; }
+        
+        /* 칩 그리드 */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .chip {
+            width: 60px; height: 45px; background-color: #f3e5ab; border-radius: 12px 12px 15px 15px;
+            cursor: pointer; border: 2px solid #000; transition: 0.1s;
+        }
+        .chip:active { transform: translateY(3px); }
+        .chip.revealed { pointer-events: none; }
+        .chip.safe { background-color: #eee; border-color: #ccc; }
+        .chip.bomb { background-color: #ff4757; border-color: #000; display: flex; align-items: center; justify-content: center; }
+
+        /* 리셋 버튼 */
+        .reset-btn {
+            margin-top: 50px; padding: 10px 40px; font-size: 16px; cursor: pointer;
+            background: #000; color: #fff; border: none; font-weight: bold; border-radius: 5px;
+        }
+        .reset-btn:hover { background: #333; }
+    </style>
+</head>
+<body>
+
+    <div id="status"></div>
+
+    <div class="game-board">
+        <div class="side">
+            <div class="hearts" id="h1">❤️❤️❤️</div>
+            <div class="grid" id="g1"></div>
+        </div>
+
+        <div class="side">
+            <div class="hearts" id="h2">❤️❤️❤️</div>
+            <div class="grid" id="g2"></div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="init()">RESET</button>
+
+    <script>
+        let life = [3, 3];
+        let gameOver = false;
+
+        function create(pIdx) {
+            const g = document.getElementById(`g${pIdx+1}`);
+            g.innerHTML = '';
+            let data = new Array(9).fill('S');
+            let b = 0;
+            while(b < 3) {
+                let r = Math.floor(Math.random()*9);
+                if(data[r]==='S') { data[r]='B'; b++; }
+            }
+            data.forEach(v => {
+                const c = document.createElement('div');
+                c.className = 'chip';
+                c.onclick = () => {
+                    if(gameOver) return;
+                    c.classList.add('revealed');
+                    if(v === 'B') {
+                        c.classList.add('bomb'); c.innerText = '💣';
+                        life[pIdx]--;
+                        updateHearts(pIdx);
+                        if(life[pIdx] <= 0) {
+                            gameOver = true;
+                            document.getElementById('status').innerText = `PLAYER ${pIdx+1} LOSE!`;
+                        }
+                    } else {
+                        c.classList.add('safe');
+                    }
+                };
+                g.appendChild(c);
+            });
+        }
+
+        function updateHearts(pIdx) {
+            document.getElementById(`h${pIdx+1}`).innerText = "❤️".repeat(life[pIdx]) + "🖤".repeat(3-life[pIdx]);
+        }
+
+        function init() {
+            life = [3, 3];
+            gameOver = false;
+            document.getElementById('status').innerText = "";
+            document.getElementById('h1').innerText = "❤️❤️❤️";
+            document.getElementById('h2').innerText = "❤️❤️❤️";
+            create(0); create(1);
+        }
+
+        init();
+    </script>
+</body>
+</html>

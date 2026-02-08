@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Chip Challenge 5x5</title>
+    <style>
+        body { background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
+        
+        #status { font-size: 28px; font-weight: bold; height: 50px; margin-bottom: 20px; color: #333; }
+
+        .game-board { display: flex; gap: 40px; }
+        .side { text-align: center; }
+
+        /* 하트 스타일 */
+        .hearts { font-size: 24px; margin-bottom: 15px; color: #ff4757; letter-spacing: 2px; }
+        
+        /* 칩 그리드: 5x5 확장 */
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .chip {
+            width: 50px; height: 40px; background-color: #f3e5ab; border-radius: 8px 8px 10px 10px;
+            cursor: pointer; border: 2px solid #333; transition: 0.1s;
+        }
+        .chip:active { transform: translateY(2px); }
+        .chip.revealed { pointer-events: none; }
+        .chip.safe { background-color: #e0e0e0; border-color: #bbb; }
+        .chip.bomb { background-color: #ff4757; border-color: #000; display: flex; align-items: center; justify-content: center; }
+
+        .reset-btn {
+            margin-top: 40px; padding: 12px 50px; font-size: 18px; cursor: pointer;
+            background: #000; color: #fff; border: none; font-weight: bold; border-radius: 8px;
+        }
+        .reset-btn:hover { background: #333; }
+    </style>
+</head>
+<body>
+
+    <div id="status"></div>
+
+    <div class="game-board">
+        <div class="side">
+            <div style="margin-bottom:5px; font-weight:bold;">PLAYER 1</div>
+            <div class="hearts" id="h1">❤️❤️❤️❤️❤️</div>
+            <div class="grid" id="g1"></div>
+        </div>
+
+        <div class="side">
+            <div style="margin-bottom:5px; font-weight:bold;">PLAYER 2</div>
+            <div class="hearts" id="h2">❤️❤️❤️❤️❤️</div>
+            <div class="grid" id="g2"></div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="init()">RESTART</button>
+
+    <script>
+        let life = [5, 5];
+        let gameOver = false;
+        const GRID_SIZE = 25; // 5x5
+        const BOMB_COUNT = 7; // 폭탄 개수 (조정 가능)
+
+        function create(pIdx) {
+            const g = document.getElementById(`g${pIdx+1}`);
+            g.innerHTML = '';
+            
+            // 데이터 초기화 (S: Safe, B: Bomb)
+            let data = new Array(GRID_SIZE).fill('S');
+            let b = 0;
+            while(b < BOMB_COUNT) {
+                let r = Math.floor(Math.random() * GRID_SIZE);
+                if(data[r] === 'S') { data[r] = 'B'; b++; }
+            }
+
+            data.forEach(v => {
+                const c = document.createElement('div');
+                c.className = 'chip';
+                c.onclick = () => {
+                    if(gameOver) return;
+                    if(c.classList.contains('revealed')) return;
+
+                    c.classList.add('revealed');
+                    if(v === 'B') {
+                        c.classList.add('bomb'); 
+                        c.innerText = '💣';
+                        life[pIdx]--;
+                        updateHearts(pIdx);
+                        if(life[pIdx] <= 0) {
+                            gameOver = true;
+                            document.getElementById('status').innerText = `PLAYER ${pIdx+1} DEFEATED!`;
+                        }
+                    } else {
+                        c.classList.add('safe');
+                        c.innerText = '✅'; // 안전 표시 추가
+                        c.style.fontSize = '12px';
+                    }
+                };
+                g.appendChild(c);
+            });
+        }
+
+        function updateHearts(pIdx) {
+            document.getElementById(`h${pIdx+1}`).innerText = "❤️".repeat(life[pIdx]) + "🖤".repeat(5 - life[pIdx]);
+        }
+
+        function init() {
+            life = [5, 5];
+            gameOver = false;
+            document.getElementById('status').innerText = "CHIP CHALLENGE: 5x5";
+            updateHearts(0);
+            updateHearts(1);
+            create(0); 
+            create(1);
+        }
+
+        init();
+    </script>
+</body>
+</html>
